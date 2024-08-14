@@ -47,7 +47,7 @@ namespace EventManagementServer.Controllers
                 await _context.SaveChangesAsync();
                 return CreatedAtAction(nameof(GetRegistrationById), new { id = registration.Id }, registration);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Log the exception (not shown here for brevity)
                 return StatusCode(500, new { message = "An error occurred while creating the registration." });
@@ -102,6 +102,28 @@ namespace EventManagementServer.Controllers
 
             return NoContent();
         }
+
+        // Get Team Mmebers who have registered for a course
+        [HttpGet("course/{courseId}")]
+        public async Task<ActionResult<IEnumerable<Registration>>> GetRegistrationsByCourse(int courseId)
+        {
+            if (courseId <= 0)
+            {
+                return BadRequest(new { message = "Invalid CourseId" });
+            }
+
+            var registrations = await _context.Registrations
+                .Where(r => r.CourseId == courseId)
+                .ToListAsync();
+
+            if (registrations == null || registrations.Count == 0)
+            {
+                return NotFound(new { message = "No registrations found for the given CourseId" });
+            }
+
+            return Ok(registrations);
+        }
+
 
         private bool RegistrationExists(int id)
         {
