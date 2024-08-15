@@ -5,8 +5,6 @@ VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventManagementServer", "EventManagementServer\EventManagementServer.csproj", "{1B56EA59-826B-44E4-B06B-86297C68D993}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "server-app-dotnet8", "server-app-dotnet8\server-app-dotnet8.csproj", "{05FBF089-67EE-442E-988E-5CD5D9F737FA}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

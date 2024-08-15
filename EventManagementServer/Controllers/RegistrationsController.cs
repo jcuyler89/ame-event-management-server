@@ -39,6 +39,9 @@ namespace EventManagementServer.Controllers
                 return BadRequest(new { message = "Invalid CourseId" });
             }
 
+            // Set registrationStatus to PENDING
+            registration.RegistrationStatus = "PENDING";
+
             // Additional custom validation can be added here
 
             try

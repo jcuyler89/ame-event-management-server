@@ -2,9 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using EventManagementServer.Data;
 using EventManagementServer.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace EventManagementServer.Controllers
 {
@@ -77,10 +74,10 @@ namespace EventManagementServer.Controllers
 
             foreach (var name in courseDto.Categories)
             {
-                var category = await _context.Categories.SingleOrDefaultAsync(c => c.Name == name);
+                var category = await _context.Categories.SingleOrDefaultAsync(c => c.Name == name.ToLower()); // Convert category name to lowercase if necessary
                 if (category == null)
                 {
-                    category = new Category { Name = name };
+                    category = new Category { Name = name.ToLower() }; // Store category name as lowercase if necessary
                     _context.Categories.Add(category);
                     await _context.SaveChangesAsync();
                 }
@@ -107,6 +104,49 @@ namespace EventManagementServer.Controllers
             return CreatedAtAction(nameof(GetCourses), new { id = course.Id }, course);
         }
 
+        [HttpPost("MyCourses")]
+        public async Task<ActionResult<IEnumerable<CourseDto>>> GetCoursesByUserEmail([FromBody] UserEmailDto userEmailDto)
+        {
+            if (string.IsNullOrWhiteSpace(userEmailDto.Email))
+            {
+                return BadRequest(new { message = "Email is required" });
+            }
+
+            // Convert input email to lowercase
+            var emailLower = userEmailDto.Email.ToLower();
+
+            // Find the registrations by user email (case-insensitive)
+            var registrations = await _context.Registrations
+                .Include(r => r.Course)
+                    .ThenInclude(c => c.CourseCategories)
+                        .ThenInclude(cc => cc.Category)
+                .Where(r => r.Email.ToLower() == emailLower)  // Convert database email to lowercase
+                .ToListAsync();
+
+            if (registrations == null || registrations.Count == 0)
+            {
+                return NotFound(new { message = "No registrations found for the given email" });
+            }
+
+            // Get the list of courses the user is registered for
+            var courses = registrations.Select(r => r.Course).Distinct().ToList();
+
+            // Convert to CourseDto
+            var result = courses.Select(course => new CourseDto
+            {
+                Id = course.Id,
+                Title = course.Title,
+                Description = course.Description,
+                Instructor = course.Instructor,
+                StartDate = course.StartDate,
+                EndDate = course.EndDate,
+                Duration = course.Duration,
+                Categories = course.CourseCategories.Select(cc => cc.Category.Name).ToList()
+            });
+
+            return Ok(result);
+        }
+
         [HttpPut("{id}")]
         public async Task<ActionResult<Course>> UpdateCourse(int id, CourseDto courseDto)
         {
@@ -123,10 +163,10 @@ namespace EventManagementServer.Controllers
 
             foreach (var name in courseDto.Categories)
             {
-                var category = await _context.Categories.SingleOrDefaultAsync(c => c.Name == name);
+                var category = await _context.Categories.SingleOrDefaultAsync(c => c.Name == name.ToLower()); // Convert category name to lowercase if necessary
                 if (category == null)
                 {
-                    category = new Category { Name = name };
+                    category = new Category { Name = name.ToLower() }; // Store category name as lowercase if necessary
                     _context.Categories.Add(category);
                     await _context.SaveChangesAsync();
                 }
