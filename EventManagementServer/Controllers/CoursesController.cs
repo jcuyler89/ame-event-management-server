@@ -40,7 +40,7 @@ namespace EventManagementServer.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<CourseDto>> GetCourseById(int id)
+        public async Task<ActionResult<CourseDto>> GetCourseById(Guid id)
         {
             var course = await _context.Courses
                 .Include(c => c.CourseCategories)
@@ -148,7 +148,7 @@ namespace EventManagementServer.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<Course>> UpdateCourse(int id, CourseDto courseDto)
+        public async Task<ActionResult<Course>> UpdateCourse(Guid id, CourseDto courseDto)
         {
             var course = await _context.Courses
                 .Include(c => c.CourseCategories)

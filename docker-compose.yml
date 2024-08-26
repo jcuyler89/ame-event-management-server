@@ -1,0 +1,30 @@
+services:
+  webapi:
+    image: ame-event-management-server:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - DEFAULT_CONNECTION_STRING=Server=db;Port=5432;Database=yourdb;Username=youruser;Password=yourpassword
+      - SECOND_CONNECTION_STRING=Server=ame-event-management-server-db-1;Port=9999;Database=yourbb;Username=youruser;Password=yourpassword
+    ports:
+      - "8090:8080"
+    depends_on:
+      - db
+    networks:
+      - mynetwork
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: youruser
+      POSTGRES_PASSWORD: yourpassword
+      POSTGRES_DB: yourdb
+    ports:
+      - "9999:5432"
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge

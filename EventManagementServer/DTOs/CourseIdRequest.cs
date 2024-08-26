@@ -2,6 +2,6 @@ namespace EventManagementServer.Models
 {
     public class CourseIdRequest
     {
-        public int CourseId { get; set; }
+        public Guid CourseId { get; set; }
     }
 }

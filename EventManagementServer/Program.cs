@@ -1,8 +1,25 @@
 using EventManagementServer.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add Azure Key Vault to the configuration
+var keyVaultName = Environment.GetEnvironmentVariable("KeyVaultName");
+if (string.IsNullOrEmpty(keyVaultName))
+{
+    throw new InvalidOperationException("KeyVaultName environment variable is not set. Please ensure you have set it correctly.\n\n" +
+        "To set the environment variable, follow the instructions below based on your environment:\n\n" +
+        "1. **For Local Development**:\n" +
+        "   - **Windows Command Prompt**: Use the command `set KeyVaultName=your-key-vault-name`\n" +
+        "   - **Windows PowerShell**: Use the command `$env:KeyVaultName=\"your-key-vault-name\"`\n" +
+        "   - **Linux/Mac (bash shell)**: Use the command `export KeyVaultName=your-key-vault-name`\n\n" +
+
+        "Please restart your application after setting the environment variable.");
+}
+var keyVaultUri = new Uri($"https://{keyVaultName}.vault.azure.net/");
 
 // Add services to the container.
 builder.Services.AddControllers()
@@ -24,8 +41,22 @@ builder.Services.AddCors(options =>
         });
 });
 
+// Get the default connection string from environment variable or fallback to appsettings.json
+var defaultConnectionString = Environment.GetEnvironmentVariable("DEFAULT_CONNECTION_STRING") ??
+                              builder.Configuration.GetConnectionString("DefaultConnection");
+
+// Get the second connection string from environment variable or fallback to appsettings.json
+var secondConnectionString = Environment.GetEnvironmentVariable("SECOND_CONNECTION_STRING") ??
+                             builder.Configuration.GetConnectionString("SecondConnection");
+
+// Configure the DbContext for the default connection
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(defaultConnectionString));
+
+// Optionally, configure another DbContext for the second connection if needed
+// If you're not using a second DbContext, you can skip this part
+// builder.Services.AddDbContext<SecondDbContext>(options =>
+//     options.UseNpgsql(secondConnectionString));
 
 // Add Swagger for API documentation
 builder.Services.AddEndpointsApiExplorer();

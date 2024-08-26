@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -16,8 +15,7 @@ namespace EventManagementServer.Migrations
                 name: "Categories",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -29,8 +27,7 @@ namespace EventManagementServer.Migrations
                 name: "Courses",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Title = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
                     Instructor = table.Column<string>(type: "text", nullable: true),
@@ -47,8 +44,8 @@ namespace EventManagementServer.Migrations
                 name: "CourseCategories",
                 columns: table => new
                 {
-                    CourseId = table.Column<int>(type: "integer", nullable: false),
-                    CategoryId = table.Column<int>(type: "integer", nullable: false)
+                    CourseId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CategoryId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -71,8 +68,7 @@ namespace EventManagementServer.Migrations
                 name: "Registrations",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true),
                     Email = table.Column<string>(type: "text", nullable: true),
                     CostCenter = table.Column<int>(type: "integer", nullable: false),
@@ -81,10 +77,8 @@ namespace EventManagementServer.Migrations
                     Position = table.Column<string>(type: "text", nullable: true),
                     TeamMemberManager = table.Column<string>(type: "text", nullable: true),
                     ManagerEmail = table.Column<string>(type: "text", nullable: true),
-                    CourseId = table.Column<int>(type: "integer", nullable: false),
+                    CourseId = table.Column<Guid>(type: "uuid", nullable: false),
                     SubmittedBy = table.Column<string>(type: "text", nullable: true),
-                    Phone = table.Column<string>(type: "text", nullable: true),
-                    TeamMemberNumber = table.Column<string>(type: "text", nullable: true),
                     RegistrationStatus = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>

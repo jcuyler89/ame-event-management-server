@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EventManagementServer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240802092034_InitialMigration")]
+    [Migration("20240820112412_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -27,11 +27,9 @@ namespace EventManagementServer.Migrations
 
             modelBuilder.Entity("EventManagementServer.Models.Category", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
@@ -43,11 +41,9 @@ namespace EventManagementServer.Migrations
 
             modelBuilder.Entity("EventManagementServer.Models.Course", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -74,11 +70,11 @@ namespace EventManagementServer.Migrations
 
             modelBuilder.Entity("EventManagementServer.Models.CourseCategory", b =>
                 {
-                    b.Property<int>("CourseId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("CourseId", "CategoryId");
 
@@ -89,17 +85,15 @@ namespace EventManagementServer.Migrations
 
             modelBuilder.Entity("EventManagementServer.Models.Registration", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<int>("CostCenter")
                         .HasColumnType("integer");
 
-                    b.Property<int>("CourseId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Department")
                         .HasColumnType("text");
@@ -111,9 +105,6 @@ namespace EventManagementServer.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Phone")
                         .HasColumnType("text");
 
                     b.Property<string>("Position")
@@ -129,9 +120,6 @@ namespace EventManagementServer.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("TeamMemberManager")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TeamMemberNumber")
                         .HasColumnType("text");
 
                     b.HasKey("Id");

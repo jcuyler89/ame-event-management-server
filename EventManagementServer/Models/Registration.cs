@@ -4,7 +4,7 @@ namespace EventManagementServer.Models
 {
     public class Registration
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         public string Name { get; set; }
         public string Email { get; set; }
         public int CostCenter { get; set; }
@@ -13,7 +13,7 @@ namespace EventManagementServer.Models
         public string Position { get; set; }
         public string TeamMemberManager { get; set; }
         public string ManagerEmail { get; set; }
-        public int CourseId { get; set; }
+        public Guid CourseId { get; set; }
 
         [JsonIgnore]
         public Course Course { get; set; }

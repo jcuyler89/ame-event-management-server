@@ -34,7 +34,7 @@ namespace EventManagementServer.Controllers
             }
 
             // Custom validation for courseId
-            if (registration.CourseId <= 0)
+            if (registration.CourseId <= Guid.Empty)
             {
                 return BadRequest(new { message = "Invalid CourseId" });
             }
@@ -58,7 +58,7 @@ namespace EventManagementServer.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Registration>> GetRegistrationById(int id)
+        public async Task<ActionResult<Registration>> GetRegistrationById(Guid id)
         {
             var registration = await _context.Registrations
                 .Include(r => r.Course)
@@ -73,7 +73,7 @@ namespace EventManagementServer.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateRegistration(int id, Registration registration)
+        public async Task<IActionResult> UpdateRegistration(Guid id, Registration registration)
         {
             if (id != registration.Id)
             {
@@ -108,9 +108,9 @@ namespace EventManagementServer.Controllers
 
         // Get Team Mmebers who have registered for a course
         [HttpGet("course/{courseId}")]
-        public async Task<ActionResult<IEnumerable<Registration>>> GetRegistrationsByCourse(int courseId)
+        public async Task<ActionResult<IEnumerable<Registration>>> GetRegistrationsByCourse(Guid courseId)
         {
-            if (courseId <= 0)
+            if (courseId <= Guid.Empty)
             {
                 return BadRequest(new { message = "Invalid CourseId" });
             }
@@ -128,7 +128,7 @@ namespace EventManagementServer.Controllers
         }
 
 
-        private bool RegistrationExists(int id)
+        private bool RegistrationExists(Guid id)
         {
             return _context.Registrations.Any(e => e.Id == id);
         }

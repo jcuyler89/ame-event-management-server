@@ -1,12 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace EventManagementServer.Models
 {
     public class Course
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         public string Title { get; set; }
         public string Description { get; set; }
         public string Instructor { get; set; }

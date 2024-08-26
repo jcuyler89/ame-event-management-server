@@ -24,11 +24,9 @@ namespace EventManagementServer.Migrations
 
             modelBuilder.Entity("EventManagementServer.Models.Category", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
@@ -40,11 +38,9 @@ namespace EventManagementServer.Migrations
 
             modelBuilder.Entity("EventManagementServer.Models.Course", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -71,11 +67,11 @@ namespace EventManagementServer.Migrations
 
             modelBuilder.Entity("EventManagementServer.Models.CourseCategory", b =>
                 {
-                    b.Property<int>("CourseId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("CourseId", "CategoryId");
 
@@ -86,17 +82,15 @@ namespace EventManagementServer.Migrations
 
             modelBuilder.Entity("EventManagementServer.Models.Registration", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<int>("CostCenter")
                         .HasColumnType("integer");
 
-                    b.Property<int>("CourseId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Department")
                         .HasColumnType("text");
