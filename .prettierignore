@@ -1,0 +1,11 @@
+# Ignore all YAML files
+*.yaml
+*.yml
+
+# Ignore node_modules and build directories
+node_modules/
+build/
+dist/
+
+# Ignore other config files
+package-lock.json

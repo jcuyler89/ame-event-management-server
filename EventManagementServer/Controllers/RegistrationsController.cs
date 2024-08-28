@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Mvc;
 using EventManagementServer.Data;
 using EventManagementServer.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EventManagementServer.Controllers
 {
     [Route("/[controller]")]
     [ApiController]
+    [Authorize]
     public class RegistrationsController : ControllerBase
     {
         private readonly AppDbContext _context;

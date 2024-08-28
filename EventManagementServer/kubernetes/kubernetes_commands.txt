@@ -1,0 +1,3 @@
+helm install ame-event-management-server-dev .\kubernetes\ --namespace ame-event-management-server-dev
+
+helm upgrade ame-event-management-server-dev .\kubernetes\ --namespace ame-event-management-server-dev

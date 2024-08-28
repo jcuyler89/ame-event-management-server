@@ -34,11 +34,10 @@ builder.Configuration.AddAzureKeyVault(keyVaultUri, new DefaultAzureCredential()
 
 // Retrieve JWT settings from Azure Key Vault
 var secretClient = new SecretClient(keyVaultUri, new DefaultAzureCredential());
-var jwtKeySecret = secretClient.GetSecret("AmeEventManagementServer-JwtSecretKey").Value?.Value;
 var jwtIssuerSecret = secretClient.GetSecret("AmeEventManagementServer-JwtIssuer").Value?.Value;
 var jwtAudienceSecret = secretClient.GetSecret("AmeEventMAnagementServer-JwtAudience").Value?.Value;
 
-if (string.IsNullOrEmpty(jwtKeySecret) || string.IsNullOrEmpty(jwtIssuerSecret) || string.IsNullOrEmpty(jwtAudienceSecret))
+if (string.IsNullOrEmpty(jwtIssuerSecret) || string.IsNullOrEmpty(jwtAudienceSecret))
 {
     throw new InvalidOperationException("JWT configuration secrets are not set in Azure Key Vault.");
 }
@@ -47,6 +46,8 @@ if (string.IsNullOrEmpty(jwtKeySecret) || string.IsNullOrEmpty(jwtIssuerSecret) 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme) // Use JwtBearerDefaults here
     .AddJwtBearer(options =>
     {
+        options.Authority = "https://dev-kwk94vpz.us.auth0.com";
+        options.Audience = "S9tJSEfSIwmLDTuoanUOpuUn4QTXo0Ti";
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -55,7 +56,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme) // Us
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtIssuerSecret,
             ValidAudience = jwtAudienceSecret,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKeySecret))
         };
     });
 

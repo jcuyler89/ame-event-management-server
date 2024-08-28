@@ -1,23 +1,26 @@
-# Use the official .NET image as a build stage
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+# Use the official .NET 8.0 SDK as the build image
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
 
-# Use the .NET SDK image for the build stage
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
-COPY ["EventManagementServer.csproj", "./"]
-RUN dotnet restore "./EventManagementServer.csproj"
-COPY . .
-WORKDIR "/src/."
-RUN dotnet build "EventManagementServer.csproj" -c Release -o /app/build
+# Copy csproj and restore dependencies
+COPY *.csproj ./
+RUN dotnet restore
 
-FROM build AS publish
-RUN dotnet publish "EventManagementServer.csproj" -c Release -o /app/publish
+# Copy the rest of the application files
+COPY . ./
 
-# Final stage: running the app
-FROM base AS final
+# Build the application
+RUN dotnet publish -c Release -o out
+
+# Use the official .NET runtime as the base image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "EventManagementServer.dll"]
+
+# Copy the published output from the build step
+COPY --from=build-env /app/out .
+
+# Expose the port your application runs on
+EXPOSE 5050
+
+# Set the entry point for the container
+ENTRYPOINT ["dotnet", "YourApp.dll"]
