@@ -1,53 +1,33 @@
 using EventManagementServer.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer; // Corrected the using directive
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using System.Text.Json.Serialization;
-using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Load environment variables from .env file for local development (optional)
+DotNetEnv.Env.Load();
 
 // Add services to the container, including Authorization
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();
 
-// Retrieve Key Vault name from environment variables
-var keyVaultName = Environment.GetEnvironmentVariable("KeyVaultName");
-if (string.IsNullOrEmpty(keyVaultName))
-{
-    throw new InvalidOperationException("KeyVaultName environment variable is not set. Please ensure you have set it correctly.\n\n" +
-        "To set the environment variable, follow the instructions below based on your environment:\n\n" +
-        "1. **For Local Development**:\n" +
-        "   - **Windows Command Prompt**: Use the command `set KeyVaultName=your-key-vault-name`\n" +
-        "   - **Windows PowerShell**: Use the command `$env:KeyVaultName=\"your-key-vault-name\"`\n" +
-        "   - **Linux/Mac (bash shell)**: Use the command `export KeyVaultName=your-key-vault-name`\n\n" +
-        "Please restart your application after setting the environment variable.");
-}
-
-// Set up Key Vault URI
-var keyVaultUri = new Uri($"https://{keyVaultName}.vault.azure.net/");
-
-// Add Azure Key Vault to the configuration
-builder.Configuration.AddAzureKeyVault(keyVaultUri, new DefaultAzureCredential());
-
-// Retrieve JWT settings from Azure Key Vault
-var secretClient = new SecretClient(keyVaultUri, new DefaultAzureCredential());
-var jwtIssuerSecret = secretClient.GetSecret("AmeEventManagementServer-JwtIssuer").Value?.Value;
-var jwtAudienceSecret = secretClient.GetSecret("AmeEventMAnagementServer-JwtAudience").Value?.Value;
+// Retrieve JWT settings from environment variables
+var jwtIssuerSecret = Environment.GetEnvironmentVariable("JWT_ISSUER");
+var jwtAudienceSecret = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
 
 if (string.IsNullOrEmpty(jwtIssuerSecret) || string.IsNullOrEmpty(jwtAudienceSecret))
 {
-    throw new InvalidOperationException("JWT configuration secrets are not set in Azure Key Vault.");
+    throw new InvalidOperationException("JWT configuration environment variables are not set. Please ensure JWT_ISSUER and JWT_AUDIENCE are set.");
 }
 
 // Configure JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme) // Use JwtBearerDefaults here
     .AddJwtBearer(options =>
     {
-        options.Authority = "https://dev-kwk94vpz.us.auth0.com";
-        options.Audience = "S9tJSEfSIwmLDTuoanUOpuUn4QTXo0Ti";
+        options.Authority = Environment.GetEnvironmentVariable("AUTHORITY_URL"); // Set authority from environment variable
+        options.Audience = Environment.GetEnvironmentVariable("AUDIENCE_ID");    // Set audience from environment variable
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -59,43 +39,35 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme) // Us
         };
     });
 
-// Retrieve AmeEventManagementServerAllowedOrigins from Key Vault
-var allowedOriginsSecret = secretClient.GetSecret("AmeEventManagementServerAllowedOrigins").Value?.Value;
-
-if (string.IsNullOrEmpty(allowedOriginsSecret))
+// Retrieve AmeEventManagementServerAllowedOrigins from environment variables
+var allowedOrigins = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS");
+if (string.IsNullOrEmpty(allowedOrigins))
 {
-    throw new InvalidOperationException("AmeEventManagementServerAllowedOrigins secret is not set in Azure Key Vault.");
+    throw new InvalidOperationException("AmeEventManagementServerAllowedOrigins environment variable is not set.");
 }
 
-var allowedOrigins = allowedOriginsSecret.Split(',');
-
-// Add CORS policy
+// Add CORS policy using allowed origins from environment variables
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
-        builder =>
+        policy =>
         {
-            builder.WithOrigins(allowedOrigins)
-                   .AllowAnyHeader()
-                   .AllowAnyMethod();
+            policy.WithOrigins(allowedOrigins.Split(','))
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
         });
 });
 
-// Get the default connection string from Azure Key Vault or fallback to environment variables
-var defaultConnectionStringSecret = secretClient.GetSecret("AmeEventManagementServerDefaultConnection").Value?.Value;
-if (string.IsNullOrEmpty(defaultConnectionStringSecret))
+// Get the default connection string from environment variables
+var defaultConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
+if (string.IsNullOrEmpty(defaultConnectionString))
 {
-    throw new InvalidOperationException("AmeEventManagementServerDefaultConnection secret is not set in Azure Key Vault.");
+    throw new InvalidOperationException("Database connection string is not set. Please ensure the DB_CONNECTION_STRING environment variable is set.");
 }
 
 // Configure the DbContext for the default connection
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(defaultConnectionStringSecret));
-
-// Optionally, configure another DbContext for the second connection if needed
-// If you're not using a second DbContext, you can skip this part
-// builder.Services.AddDbContext<SecondDbContext>(options =>
-//     options.UseNpgsql(secondConnectionString));
+    options.UseNpgsql(defaultConnectionString));
 
 // Add Swagger for API documentation
 builder.Services.AddEndpointsApiExplorer();

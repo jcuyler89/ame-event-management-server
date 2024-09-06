@@ -3,7 +3,6 @@ using EventManagementServer.DTOs; // Correct namespace
 using System.Net.Http.Formatting;
 using Microsoft.AspNetCore.Authorization;
 
-
 namespace EventManagementServer.Controllers
 {
     [ApiController]
@@ -12,14 +11,11 @@ namespace EventManagementServer.Controllers
     public class AppliedUsersController : ControllerBase
     {
         private static readonly HttpClient _httpClient = new HttpClient();
-        private readonly string _apiKey;
+        private readonly string _apiKey = "GM4WMMBVGJRWGLJUGUZWELJUG5RWKLLBHEYDMLJXG5QWEMTFGM4WCZDDHE";  // Your API key
 
         public AppliedUsersController(IConfiguration configuration)
         {
-            _apiKey = configuration["ApiSettings:ApiKey"];
-
-            _httpClient.DefaultRequestHeaders.Clear();
-            _httpClient.DefaultRequestHeaders.Add("X-API-Key", _apiKey);
+            // The API key is hardcoded in this example
         }
 
         [HttpPost]
@@ -27,26 +23,39 @@ namespace EventManagementServer.Controllers
         {
             try
             {
+                // Base URL for the API request
                 var url = "https://aks-cluster-prod.westus3.cloudapp.azure.com/AppliedUser/Search?includeInactive=false&page=1&pageSize=80";
 
+                // Add keyword if provided
                 if (!string.IsNullOrEmpty(request.Keyword))
                 {
                     url += $"&keyword={Uri.EscapeDataString(request.Keyword)}";
                 }
 
-                var response = await _httpClient.GetAsync(url);
+                // Create the HttpRequestMessage
+                var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, url);
 
+                // Add the API key in the headers
+                httpRequestMessage.Headers.Add("X-API-Key", _apiKey);  // API key added in the headers
+
+                // Send the GET request
+                var response = await _httpClient.SendAsync(httpRequestMessage);
+
+                // Check if the response is successful
                 if (!response.IsSuccessStatusCode)
                 {
                     return StatusCode((int)response.StatusCode, new { error = response.ReasonPhrase });
                 }
 
+                // Read the response content
                 var data = await response.Content.ReadAsAsync<AppliedUsersResponseDto>(new[] { new JsonMediaTypeFormatter() });
 
-                return Ok(data.Results); // Return only the list of users
+                // Return only the list of users
+                return Ok(data.Results);
             }
             catch (Exception ex)
             {
+                // Handle any exceptions
                 return StatusCode(500, new { error = ex.Message });
             }
         }

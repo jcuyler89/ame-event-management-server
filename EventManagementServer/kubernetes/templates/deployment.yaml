@@ -35,6 +35,12 @@ spec:
         envFrom:
         - secretRef:
             name: {{ .Values.secretName }}
+        env:
+        - name: KeyVaultName
+          valueFrom:
+            secretKeyRef:
+              name: ame-event-management-server-dev-secret
+              key: keyVaultName
         livenessProbe:
           httpGet:
             path: /
