@@ -91,4 +91,4 @@ app.UseAuthorization();  // Ensure authorization middleware is configured after 
 
 app.MapControllers();
 
-app.Run();
+app.Run("http://0.0.0.0:5050");

@@ -16,14 +16,21 @@ RUN dotnet publish -c Release -o /app/out
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 
-# Set environment variables
-ENV JWT_ISSUER=""
-ENV JWT_AUDIENCE=""
-ENV JWT_AUTHORITY=""
-ENV ALLOWED_ORIGINS=""
-ENV DEFAULT_CONNECTION_STRING=""
-ENV KeyVaultName=""
+# Define build-time arguments
+ARG JWT_ISSUER
+ARG JWT_AUDIENCE
+ARG JWT_AUTHORITY
+ARG ALLOWED_ORIGINS
+ARG DEFAULT_CONNECTION_STRING
+ARG KeyVaultName
 
+# Set environment variables using ARG values
+ENV JWT_ISSUER=${JWT_ISSUER}
+ENV JWT_AUDIENCE=${JWT_AUDIENCE}
+ENV JWT_AUTHORITY=${JWT_AUTHORITY}
+ENV ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+ENV DEFAULT_CONNECTION_STRING=${DEFAULT_CONNECTION_STRING}
+ENV KeyVaultName=${KeyVaultName}
 
 # Copy the published output from the build step
 COPY --from=build-env /app/out .

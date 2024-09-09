@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ame-events-server
+  namespace: ame-events-server-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ame-events-server
+  template:
+    metadata:
+      labels:
+        app: ame-events-server
+    spec:
+      containers:
+      - name: ame-events-server
+        image: http://localhost:5000/ame-events-server:0.3
+        ports:
+        - containerPort: 5050
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
