@@ -36,7 +36,7 @@ ENV KeyVaultName=${KeyVaultName}
 COPY --from=build-env /app/out .
 
 # Expose the port your application runs on
-EXPOSE 5050
+EXPOSE 3000
 
 # Set the entry point for the container
 ENTRYPOINT ["dotnet", "EventManagementServer.dll"]
