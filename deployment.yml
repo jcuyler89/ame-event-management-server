@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ame-events-server-dev-deployment
+  namespace: ame-events-server-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ame-events-server-dev
+  template:
+    metadata:
+      labels:
+        app: ame-events-server-dev
+    spec:
+      containers:
+      - name: ame-events-server-dev-container
+        image: ghcr.io/jcuyler89/event-management-server:0.0.11
+        ports:
+        - containerPort: 5050
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        envFrom:
+        - secretRef:
+            name: ame-events-server-dev-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ame-events-server-dev-service
+  namespace: ame-events-server-dev
+spec:
+  type: ClusterIP
+  selector:
+    app: ame-events-server-dev
+  ports:
+  - protocol: TCP
+    port: 80  # The port exposed by the service (externally accessible inside the cluster)
+    targetPort: 5050  # The port the container listens on
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ame-events-server-dev-ingress
+  namespace: ame-events-server-dev
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: eventsapi.dev.cluster.appliedmedical.eu
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: ame-events-server-dev-service
+                port:
+                  number: 80  # The port exposed by the service
+  tls:
+    - hosts:
+      - eventsapi.dev.cluster.appliedmedical.eu
+      secretName: tls-secret-ame-events-server-dev
