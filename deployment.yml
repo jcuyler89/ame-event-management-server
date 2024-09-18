@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: ame-events-server-dev-container
-        image: ghcr.io/jcuyler89/event-management-server:0.0.11
+        image: ghcr.io/jcuyler89/ame-event-management-server:sha256-3f0c659689102aaf0d77127ffd0fbe833e78e3c0194425aa7900d3b1619e1abe.sig
         ports:
         - containerPort: 5050
         resources:
@@ -27,7 +27,9 @@ spec:
             cpu: "500m"
         envFrom:
         - secretRef:
-            name: ame-events-server-dev-secret
+            name: ame-events-server-secrets
+      imagePullSecrets:                 # Add this section
+      - name: ghcr-secret                # Referencing the created secret
 ---
 apiVersion: v1
 kind: Service

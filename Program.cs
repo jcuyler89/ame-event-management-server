@@ -23,9 +23,8 @@ string GetEnvironmentVariableOrThrow(string name)
 }
 
 // Retrieve JWT settings
-var jwtIssuer = GetEnvironmentVariableOrThrow("JWT_ISSUER");
-var jwtAudience = GetEnvironmentVariableOrThrow("JWT_AUDIENCE");
-var jwtAuthority = GetEnvironmentVariableOrThrow("AUTHORITY_URL");
+var jwtIssuer = GetEnvironmentVariableOrThrow("AUTH0_URL");
+var jwtClientId = GetEnvironmentVariableOrThrow("AUTH0_CLIENT_ID");
 
 // Add services to the container, including Authorization
 builder.Services.AddControllers();
@@ -35,8 +34,8 @@ builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = jwtAuthority;
-        options.Audience = jwtAudience;
+        options.Authority = jwtIssuer;
+        options.Audience = jwtClientId;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -44,7 +43,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtIssuer,
-            ValidAudience = jwtAudience,
+            ValidAudience = jwtClientId,
         };
     });
 
