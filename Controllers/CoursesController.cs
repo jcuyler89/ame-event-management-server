@@ -8,7 +8,7 @@ namespace EventManagementServer.Controllers
 {
     [Route("[controller]")] // Removed the leading slash
     [ApiController]
-    // [Authorize]
+    [Authorize]
     public class CoursesController : ControllerBase
     {
         private readonly AppDbContext _context;
