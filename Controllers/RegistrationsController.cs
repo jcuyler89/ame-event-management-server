@@ -121,9 +121,10 @@ namespace EventManagementServer.Controllers
                 .Where(r => r.CourseId == courseId)
                 .ToListAsync();
 
+            // Instead of returning NotFound, return an empty list if there are no registrations
             if (registrations == null || registrations.Count == 0)
             {
-                return NotFound(new { message = "No registrations found for the given CourseId" });
+                return Ok(new List<Registration>()); // Return an empty list
             }
 
             return Ok(registrations);
