@@ -6,9 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EventManagementServer.Controllers
 {
-    [Route("/[controller]")]
+    [Route("[controller]")] // Removed the leading slash
     [ApiController]
-    [Authorize]
+    // [Authorize]
     public class CoursesController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -29,6 +29,9 @@ namespace EventManagementServer.Controllers
             var result = courses.Select(course => new CourseDto
             {
                 Id = course.Id,
+                CourseId = course.CourseId, // Assuming this is intentional
+                SessionId = course.SessionId,
+                GroupId = course.GroupId,
                 Title = course.Title,
                 Description = course.Description,
                 Instructor = course.Instructor,
@@ -57,6 +60,9 @@ namespace EventManagementServer.Controllers
             var result = new CourseDto
             {
                 Id = course.Id,
+                CourseId = course.CourseId,
+                SessionId = course.SessionId,
+                GroupId = course.GroupId,
                 Title = course.Title,
                 Description = course.Description,
                 Instructor = course.Instructor,
@@ -72,22 +78,30 @@ namespace EventManagementServer.Controllers
         [HttpPost]
         public async Task<ActionResult<Course>> CreateCourse(CourseDto courseDto)
         {
-            var categoryConnections = new List<Category>();
-
-            foreach (var name in courseDto.Categories)
+            if (courseDto.Categories == null || !courseDto.Categories.Any())
             {
-                var category = await _context.Categories.SingleOrDefaultAsync(c => c.Name == name.ToLower()); // Convert category name to lowercase if necessary
-                if (category == null)
-                {
-                    category = new Category { Name = name.ToLower() }; // Store category name as lowercase if necessary
-                    _context.Categories.Add(category);
-                    await _context.SaveChangesAsync();
-                }
-                categoryConnections.Add(category);
+                return BadRequest(new { message = "Categories cannot be empty." });
             }
+
+            var existingCategories = await _context.Categories
+                .Where(c => courseDto.Categories.Contains(c.Name.ToLower()))
+                .ToListAsync();
+
+            var newCategories = courseDto.Categories
+                .Where(name => !existingCategories.Any(c => c.Name == name.ToLower()))
+                .Select(name => new Category { Name = name.ToLower() })
+                .ToList();
+
+            _context.Categories.AddRange(newCategories);
+            await _context.SaveChangesAsync();
+
+            var categoryConnections = existingCategories.Concat(newCategories).ToList();
 
             var course = new Course
             {
+                CourseId = courseDto.CourseId,
+                SessionId = courseDto.SessionId,
+                GroupId = courseDto.GroupId,
                 Title = courseDto.Title,
                 Description = courseDto.Description,
                 Instructor = courseDto.Instructor,
@@ -103,7 +117,7 @@ namespace EventManagementServer.Controllers
             _context.Courses.Add(course);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetCourses), new { id = course.Id }, course);
+            return CreatedAtAction(nameof(GetCourseById), new { id = course.Id }, course); // Changed to GetCourseById
         }
 
         [HttpPost("MyCourses")]
@@ -114,15 +128,13 @@ namespace EventManagementServer.Controllers
                 return BadRequest(new { message = "Email is required" });
             }
 
-            // Convert input email to lowercase
             var emailLower = userEmailDto.Email.ToLower();
 
-            // Find the registrations by user email (case-insensitive)
             var registrations = await _context.Registrations
                 .Include(r => r.Course)
                     .ThenInclude(c => c.CourseCategories)
                         .ThenInclude(cc => cc.Category)
-                .Where(r => r.Email.ToLower() == emailLower)  // Convert database email to lowercase
+                .Where(r => r.Email.ToLower() == emailLower)
                 .ToListAsync();
 
             if (registrations == null || registrations.Count == 0)
@@ -130,13 +142,14 @@ namespace EventManagementServer.Controllers
                 return NotFound(new { message = "No registrations found for the given email" });
             }
 
-            // Get the list of courses the user is registered for
             var courses = registrations.Select(r => r.Course).Distinct().ToList();
 
-            // Convert to CourseDto
             var result = courses.Select(course => new CourseDto
             {
                 Id = course.Id,
+                CourseId = course.CourseId,
+                SessionId = course.SessionId,
+                GroupId = course.GroupId,
                 Title = course.Title,
                 Description = course.Description,
                 Instructor = course.Instructor,
@@ -161,20 +174,28 @@ namespace EventManagementServer.Controllers
                 return NotFound();
             }
 
-            var categoryConnections = new List<Category>();
-
-            foreach (var name in courseDto.Categories)
+            if (courseDto.Categories == null || !courseDto.Categories.Any())
             {
-                var category = await _context.Categories.SingleOrDefaultAsync(c => c.Name == name.ToLower()); // Convert category name to lowercase if necessary
-                if (category == null)
-                {
-                    category = new Category { Name = name.ToLower() }; // Store category name as lowercase if necessary
-                    _context.Categories.Add(category);
-                    await _context.SaveChangesAsync();
-                }
-                categoryConnections.Add(category);
+                return BadRequest(new { message = "Categories cannot be empty." });
             }
 
+            var existingCategories = await _context.Categories
+                .Where(c => courseDto.Categories.Contains(c.Name.ToLower()))
+                .ToListAsync();
+
+            var newCategories = courseDto.Categories
+                .Where(name => !existingCategories.Any(c => c.Name == name.ToLower()))
+                .Select(name => new Category { Name = name.ToLower() })
+                .ToList();
+
+            _context.Categories.AddRange(newCategories);
+            await _context.SaveChangesAsync();
+
+            var categoryConnections = existingCategories.Concat(newCategories).ToList();
+
+            course.CourseId = courseDto.CourseId;
+            course.SessionId = courseDto.SessionId;
+            course.GroupId = courseDto.GroupId;
             course.Title = courseDto.Title;
             course.Description = courseDto.Description;
             course.Instructor = courseDto.Instructor;
